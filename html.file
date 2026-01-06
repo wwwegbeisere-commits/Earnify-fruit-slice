@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Earnify Fruit Slice</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #eafaff;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  h1 {
+    background: #007bff;
+    color: white;
+    margin: 0;
+    padding: 15px;
+    font-size: 24px;
+  }
+  p {
+    color: #333;
+    font-size: 16px;
+    margin: 10px;
+  }
+  .btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px;
+  }
+  .btn:active {
+    background: #0056b3;
+  }
+  canvas {
+    background: #87cefa;
+    margin-top: 15px;
+    border-radius: 12px;
+  }
+  footer {
+    background: #007bff;
+    color: white;
+    font-size: 14px;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h1>🍉 Earnify Fruit Slice</h1>
+<p>Tap fruits to slice, earn coins, and get rewarded!</p>
+<p><strong>Coins:</strong> <span id="coins">0</span> | <strong>Balance:</strong> ₦<span id="balance">0.00</span></p>
+
+<button class="btn" onclick="showInterstitial()">🎮 Play Game</button>
+<button class="btn" onclick="watchAd()">🎁 Watch Ad for Bonus</button>
+<button class="btn" onclick="withdraw()">💵 Withdraw Now</button>
+
+<canvas id="gameCanvas" width="320" height="400"></canvas>
+
+<footer id="adStatus">
+📢 Loading banner ad...
+</footer>
+
+<script>
+// --- Game logic ---
+let coins = 0;
+let balance = 0;
+let ctx = document.getElementById("gameCanvas").getContext("2d");
+let fruits = ["🍎","🍌","🍓","🍊","🍉","🍍","🍒","🥝"];
+
+function drawFruit(){
+  ctx.clearRect(0, 0, 320, 400);
+  for(let i=0;i<5;i++){
+    ctx.font = "30px Arial";
+    ctx.fillText(fruits[Math.floor(Math.random()*fruits.length)], 
+                 Math.random()*280, Math.random()*380);
+  }
+}
+drawFruit();
+
+document.getElementById("gameCanvas").addEventListener("click", ()=>{
+  coins += 10;
+  balance = coins * 0.5;
+  document.getElementById("coins").textContent = coins;
+  document.getElementById("balance").textContent = balance.toFixed(2);
+  drawFruit();
+});
+
+// --- Withdraw Simulation ---
+function withdraw(){
+  if(balance < 100000){
+    alert("❌ Minimum withdraw amount is ₦500.");
+  } else {
+    alert("✅ Withdrawal processed! Funds will reflect within 24 hours.");
+    coins = 0;
+    balance = 0;
+    document.getElementById("coins").textContent = coins;
+    document.getElementById("balance").textContent = balance.toFixed(2);
+  }
+}
+</script>
+
+<!-- ✅ Unity Ads Integration -->
+<script src="https://web-sdk.unityads.unity3d.com/prod/UnityAds.js"></script>
+<script>
+  const unityAdsGameId = "6015368"; // Your real Unity Game ID
+  const bannerId = "Banner_Android";
+  const interstitialId = "Interstitial_Android";
+  const rewardedId = "Rewarded_Android";
+
+  async function initUnityAds() {
+    try {
+      await unityAds.init(unityAdsGameId, { testMode: false });
+      console.log("✅ Unity Ads initialized!");
+      document.getElementById("adStatus").textContent = "📢 Banner ad loaded!";
+      loadBanner();
+    } catch (err) {
+      console.error("⚠️ Unity Ads failed to initialize:", err);
+      document.getElementById("adStatus").textContent = "⚠️ Banner failed to load!";
+    }
+  }
+
+  function loadBanner() {
+    unityAds.show(bannerId).catch(err => {
+      console.warn("Banner error:", err);
+      document.getElementById("adStatus").textContent = "⚠️ Banner not loaded yet.";
+    });
+  }
+
+  function showInterstitial() {
+    unityAds.show(interstitialId).catch(() => {
+      alert("⚠️ Interstitial not loaded yet. Try again soon!");
+    });
+  }
+
+  function watchAd() {
+    unityAds.show(rewardedId).then(() => {
+      coins += 100;
+      balance = coins * 0.5;
+      document.getElementById("coins").textContent = coins;
+      document.getElementById("balance").textContent = balance.toFixed(2);
+      alert("✅ You earned +100 coins bonus!");
+    }).catch(() => {
+      alert("⚠️ Unity Ads not loaded yet. Try again soon!");
+    });
+  }
+
+  // Initialize when page loads
+  window.onload = initUnityAds;
+</script>
+
+</body>
+</html>
